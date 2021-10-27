@@ -3,8 +3,8 @@
     Hello, {{ args.name }}! &nbsp;
     <button @click="onClicked">Click Me!</button>
   </span>
-  <div><Slider :min=min :max=max v-model=sliderVal label :showMinMax=minmax /></div>
-  <div><Button label="test"/></div>
+  <div><Slider :min=min :max=numClicks v-model=sliderVal label :showMinMax=minmax /></div>
+  <div><Button label="test" @click="onClicked" /></div>
 </template>
 
 <script>
@@ -14,6 +14,7 @@ import { useStreamlit } from "./streamlit"
 import {
   Input, LayoutButton, Slider, ColorPicker, Button
 } from '@robovision/quasar-ui-rvai-base'
+import '@robovision/quasar-ui-rvai-base/dist/index.min.css'
 
 export default {
   name: "MyComponent",
@@ -43,3 +44,4 @@ export default {
   },
 }
 </script>
+
