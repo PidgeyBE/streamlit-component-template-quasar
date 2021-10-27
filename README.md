@@ -1,6 +1,6 @@
-# Streamlit Component template in Vue.js
+# Streamlit Component template in Vue.js + Quasar
 
-Vue 3 template to build a Streamlit component. Uses Vue.js scoped slot to send parameters from Streamlit Python script into `args` props of your component.
+Vue 3+ Quasar template to build a Streamlit component. Uses Vue.js scoped slot to send parameters from Streamlit Python script into `args` props of your component.
 
 ## Setup
 
@@ -19,9 +19,9 @@ $ pip install streamlit # install streamlit
 - Initialize and run the component template frontend:
 
 ```
-$ cd my_component/frontend
+$ cd my_component/quasar
 $ npm install    # Install npm dependencies
-$ npm run serve  # Start the Webpack dev server
+$ quasar dev  # Start the Webpack dev server
 ```
 
 - From a separate terminal, run the template's Streamlit app:
