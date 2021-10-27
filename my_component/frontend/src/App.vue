@@ -22,6 +22,8 @@ import MyComponent from "./MyComponent.vue"
 // You don't need to edit withStreamlitConnection (but you're welcome to!).
 import WithStreamlitConnection from "./streamlit/WithStreamlitConnection.vue"
 
+import '@robovision/quasar-ui-rvai-base/dist/index.min.css'
+
 export default defineComponent({
   name: "App",
   components: {

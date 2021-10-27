@@ -1,25 +1,46 @@
 <template>
   <span>
-    Hello, {{ args.name }}! &nbsp;
-    <button @click="onClicked">Click Me!</button>
+    Hello, {{ args.name }}!
+    <br/>
+    <Button
+      label="Click me"
+      @click="onClicked"
+    />
+    <br/>
+    <div>
+      <Slider
+        :min="min"
+        :max="numClicks"
+        v-model="sliderVal"
+        label
+        :showMinMax="minmax"
+      />
+    </div>
+    <div>
+      <Input label="foo" />
+    </div>
   </span>
-  <div><Slider :min=min :max=numClicks v-model=sliderVal label :showMinMax=minmax /></div>
-  <div><Button label="test" @click="onClicked" /></div>
 </template>
 
 <script>
-import { ref } from "vue"
-import { Streamlit } from "streamlit-component-lib"
+import { ref } from 'vue'
+import { Streamlit } from 'streamlit-component-lib'
 import { useStreamlit } from "./streamlit"
-import {
-  Input, LayoutButton, Slider, ColorPicker, Button
-} from '@robovision/quasar-ui-rvai-base'
-import '@robovision/quasar-ui-rvai-base/dist/index.min.css'
+import { Button, Input, Slider } from '@robovision/quasar-ui-rvai-base'
 
 export default {
-  name: "MyComponent",
-  components: {  Button, Slider },
-  props: ["args"], // Arguments that are passed to the plugin in Python are accessible in prop "args"
+  name: 'MyComponent',
+
+  components: {
+    Button,
+    Input,
+    Slider
+  },
+
+  
+  // TODO proper typing
+  props: ['args'], // Arguments that are passed to the plugin in Python are accessible in prop "args"
+
   setup() {
     useStreamlit() // lifecycle hooks for automatic Streamlit resize
 
