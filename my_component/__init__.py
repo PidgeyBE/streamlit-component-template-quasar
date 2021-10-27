@@ -1,7 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
-
+import json
 import os
+import time
 
 _RELEASE = False
 
@@ -32,45 +33,72 @@ else:
 # `declare_component` and call it done. The wrapper allows us to customize
 # our component's API: we can pre-process its input args, post-process its
 # output value, and add a docstring for users.
+if 'init' not in st.session_state:
+    st.session_state.init = False
+    st.session_state.parameters = {'epochs': {
+        "id": "epochs",
+        "label": "epochs",
+        "infoText": "Just some epochs",
+        "type": "integer",
+        "value": 11,
+        "error": False,
+        "errorMessage": "",
+    },
+    'batch_size': {
+        "id": "batch_size",
+        "label": "batch size",
+        "infoText": "Just some batch size",
+        "type": "integer",
+        "value": 4,
+        "error": False,
+        "errorMessage": "",
+    }
+    }
+    st.session_state.debounce = time.time()
 
-
-parameters = [{
-    "label": "epochs",
-    "infoText": "Just some epochs",
-    "type": "integer",
-    "value": 10
-},
-{
-    "label": "batch size",
-    "infoText": "Just some batch size",
-    "type": "integer",
-    "value": 4
-}
-]
-
-def my_component(name, key=None):
-    component_value = _component_func(name=name, text="hellookes", dikt=parameters, key=key, default=0)
-    return component_value
+def my_component(name="test", key=None):
+    component_value = _component_func(name=name, text="hellookes",
+     parameters=st.session_state.parameters, debounce=st.session_state.debounce, key=name, default=0
+    )
+    if component_value != 0:
+        updated_parameters = json.loads(component_value)
+        changed = st.session_state.parameters != updated_parameters
+        print(f'{st.session_state.parameters["epochs"]["value"]} vs {updated_parameters["epochs"]["value"]}')
+        st.session_state.parameters.update(updated_parameters)
+        return changed  # TODO: Check value of changed, it does weird stuff...
 
 
 st.subheader("Component with constant args")
 
 # Create an instance of our component with a constant `name` arg, and
 # print its output value.
-num_clicks = my_component("World")
-st.markdown("You've clicked %s times!" % int(num_clicks))
+change = my_component("World")
+print(1)
+print(change)
 
+# PERFORM DATA CHECKS
+if st.session_state.init:
+    if int(st.session_state.parameters["epochs"]["value"]) > 100:
+        msg = "Epoch should be smaller than 10!"
+        error = True
+    else:
+        msg = ""
+        error = False
+
+    st.info(msg)
+    st.session_state.parameters["epochs"]["error"] = error
+    st.session_state.parameters["epochs"]["errorMessage"] = msg
+    st.markdown(st.session_state.parameters)
+    print(st.session_state)
+    now = time.time()
+    # if experimental_rerun is done, Vue-side is updated,
+    # but this in turn can trigger a change in values
+    # so we debounce this case
+    if now-st.session_state.debounce > 0.1:
+        st.session_state.debounce = now
+        st.experimental_rerun()
+
+st.markdown(st.session_state.parameters)
 st.markdown("---")
-st.subheader("Component with variable args")
 
-# Create a second instance of our component whose `name` arg will vary
-# based on a text_input widget.
-#
-# We use the special "key" argument to assign a fixed identity to this
-# component instance. By default, when a component's arguments change,
-# it is considered a new instance and will be re-mounted on the frontend
-# and lose its current state. In this case, we want to vary the component's
-# "name" argument without having it get recreated.
-name_input = st.text_input("Enter a name", value="Streamlit")
-num_clicks = my_component(name_input, key="foo")
-st.markdown("You've clicked %s times!" % int(num_clicks))
+st.session_state.init = True

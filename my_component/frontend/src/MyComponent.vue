@@ -7,6 +7,10 @@
       @click="onClicked"
     />
     <br/>
+      <div v-for="item in args.dikt" :key="item.label">
+        <Input :label="item.label" :infoText="item.infoText" />
+        {{ item.label }}
+      </div>
     <div>
       <Slider
         :min="min"
@@ -26,7 +30,7 @@
 import { ref } from 'vue'
 import { Streamlit } from 'streamlit-component-lib'
 import { useStreamlit } from "./streamlit"
-import { Button, Input, Slider } from '@robovision/quasar-ui-rvai-base'
+import { Button, Input, Slider, Tooltip } from '@robovision/quasar-ui-rvai-base'
 
 export default {
   name: 'MyComponent',
