@@ -34,8 +34,22 @@ else:
 # output value, and add a docstring for users.
 
 
+parameters = [{
+    "label": "epochs",
+    "infoText": "Just some epochs",
+    "type": "integer",
+    "value": 10
+},
+{
+    "label": "batch size",
+    "infoText": "Just some batch size",
+    "type": "integer",
+    "value": 4
+}
+]
+
 def my_component(name, key=None):
-    component_value = _component_func(name=name, key=key, default=0)
+    component_value = _component_func(name=name, text="hellookes", dikt=parameters, key=key, default=0)
     return component_value
 
 

@@ -7,13 +7,18 @@
       @click="onClicked"
     />
     <br/>
+      <div v-for="item in args.dikt" :key="item.label">
+        <rv-input  :label="item.label" />
+        {{ item.label }}
+      </div>
     <div>
       <rv-slider
         :min="min"
-        :max="numClicks"
-        v-model="sliderVal"
+        :max="max"
+        v-model="numClicks"
         label
         :showMinMax="minmax"
+        @change="onSlide"
       />
     </div>
   </span>
@@ -37,14 +42,18 @@ export default {
       numClicks.value++
       Streamlit.setComponentValue(numClicks.value)
     }
+    const onSlide = () => {
+      Streamlit.setComponentValue(numClicks.value)
+    }
 
-    const min = 1
-    const max = 5
+    const min = 0
+    const max = 10
     const minmax=true
     const sliderVal = ref(2)
     return {
       numClicks,
       onClicked,
+      onSlide,
       min,
       max,
       sliderVal,
