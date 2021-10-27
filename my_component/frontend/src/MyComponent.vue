@@ -2,27 +2,22 @@
   <span>
     Hello, {{ args.name }}!
     <br/>
-    <rv-button
+    <Button
       label="Click me"
       @click="onClicked"
     />
     <br/>
-      <div v-for="item in args.dikt" :key="item.label">
-        <rv-input  :label="item.label" />
-        {{ item.label }}
-      </div>
     <div>
-      <rv-slider
+      <Slider
         :min="min"
-        :max="max"
-        v-model="numClicks"
+        :max="numClicks"
+        v-model="sliderVal"
         label
         :showMinMax="minmax"
-        @change="onSlide"
       />
     </div>
     <div>
-      <rv-input label="foo" />
+      <Input label="foo" />
     </div>
   </span>
 </template>
@@ -30,10 +25,19 @@
 <script>
 import { ref } from 'vue'
 import { Streamlit } from 'streamlit-component-lib'
-import { useStreamlit } from '../composables'
+import { useStreamlit } from "./streamlit"
+import { Button, Input, Slider } from '@robovision/quasar-ui-rvai-base'
 
 export default {
   name: 'MyComponent',
+
+  components: {
+    Button,
+    Input,
+    Slider
+  },
+
+  
   // TODO proper typing
   props: ['args'], // Arguments that are passed to the plugin in Python are accessible in prop "args"
 
@@ -45,18 +49,14 @@ export default {
       numClicks.value++
       Streamlit.setComponentValue(numClicks.value)
     }
-    const onSlide = () => {
-      Streamlit.setComponentValue(numClicks.value)
-    }
 
-    const min = 0
-    const max = 10
+    const min = 1
+    const max = 5
     const minmax=true
     const sliderVal = ref(2)
     return {
       numClicks,
       onClicked,
-      onSlide,
       min,
       max,
       sliderVal,
