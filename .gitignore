@@ -55,7 +55,6 @@ coverage/
 
 # Lockfiles
 yarn.lock
-package-lock.json
 
 ########################################################################
 # JetBrains
