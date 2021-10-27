@@ -16,6 +16,9 @@
         :showMinMax="minmax"
       />
     </div>
+    <div>
+      <rv-input label="foo" />
+    </div>
   </span>
 </template>
 
