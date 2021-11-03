@@ -50,17 +50,17 @@ export default {
     onMounted(() => {
       /* eslint-disable */
       console.log("mounted!")
-      parameters.value = props.args.parameters 
+      parameters.value = props.args.parameters
     })
 
     onUpdated(() => {
       /* eslint-disable */
       // Check if update is from python, with updated timestamp
-      // If so, update state
+      // If so, update state.
       if (props.args.debounce > debounce.value) {
         parameters.value = props.args.parameters
         debounce.value = props.args.debounce
-        console.log("updated!")
+        console.log(debounce.value+"updated!"+props.args.debounce)
         console.log(props.args.parameters.epochs)
       }
     })
@@ -80,7 +80,19 @@ export default {
         if (key == id) item.value = value 
       }
       console.log(parameters.value.epochs)
-      Streamlit.setComponentValue(JSON.stringify(parameters.value))
+      setTimedComponentValue(parameters.value)
+    }
+
+    // function to return value to python and include a timestamp
+    // of the change. If streamlit reloads, the component in python
+    // will have `value`
+    function setTimedComponentValue (value) {
+      debounce.value = Date.now()/1000
+      let returnVal = {
+        'parameters': {...parameters.value},
+        'timestamp': debounce.value
+      }
+      Streamlit.setComponentValue(JSON.stringify(returnVal))
     }
     const min = 0
     const max = 10

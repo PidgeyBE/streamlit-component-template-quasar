@@ -34,7 +34,7 @@ else:
 # our component's API: we can pre-process its input args, post-process its
 # output value, and add a docstring for users.
 if 'init' not in st.session_state:
-    st.session_state.init = False
+    st.session_state.init = True
     st.session_state.parameters = {'epochs': {
         "id": "epochs",
         "label": "epochs",
@@ -54,32 +54,35 @@ if 'init' not in st.session_state:
         "errorMessage": "",
     }
     }
+    st.session_state.last_ui_update = time.time()
     st.session_state.debounce = time.time()
 
+print("RELOAD")
 def my_component(name="test", key=None):
     component_value = _component_func(name=name, text="hellookes",
-     parameters=st.session_state.parameters, debounce=st.session_state.debounce, key=name, default=0
+     parameters=st.session_state.parameters, debounce=st.session_state.debounce, key=name, default=None
     )
-    if component_value != 0:
-        updated_parameters = json.loads(component_value)
-        changed = st.session_state.parameters != updated_parameters
-        print(f'{st.session_state.parameters["epochs"]["value"]} vs {updated_parameters["epochs"]["value"]}')
-        st.session_state.parameters.update(updated_parameters)
-        return changed  # TODO: Check value of changed, it does weird stuff...
-
+    if component_value is not None:
+        update = json.loads(component_value)
+        timestamp = float(update["timestamp"])
+        updated_parameters = update["parameters"]
+        if timestamp != st.session_state.last_ui_update:
+            st.session_state.last_ui_update = timestamp
+            st.session_state.parameters.update(updated_parameters)
+            return True
+        return False
 
 st.subheader("Component with constant args")
 
 # Create an instance of our component with a constant `name` arg, and
 # print its output value.
 change = my_component("World")
-print(1)
 print(change)
 
 # PERFORM DATA CHECKS
-if st.session_state.init:
+if st.session_state.init and change:
     if int(st.session_state.parameters["epochs"]["value"]) > 100:
-        msg = "Epoch should be smaller than 10!"
+        msg = "Epoch should be smaller than 100!"
         error = True
     else:
         msg = ""
@@ -89,16 +92,12 @@ if st.session_state.init:
     st.session_state.parameters["epochs"]["error"] = error
     st.session_state.parameters["epochs"]["errorMessage"] = msg
     st.markdown(st.session_state.parameters)
-    print(st.session_state)
-    now = time.time()
+
     # if experimental_rerun is done, Vue-side is updated,
-    # but this in turn can trigger a change in values
+    # but this in turn can trigger a change in values   # SHOULD NOT CAUSE CHANGE IN VALUES?
     # so we debounce this case
-    if now-st.session_state.debounce > 0.1:
-        st.session_state.debounce = now
-        st.experimental_rerun()
+    st.session_state.debounce = time.time()
+    st.experimental_rerun()
 
 st.markdown(st.session_state.parameters)
 st.markdown("---")
-
-st.session_state.init = True
