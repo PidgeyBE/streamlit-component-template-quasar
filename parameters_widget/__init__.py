@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-_RELEASE = True
+_RELEASE = False
 
 # Declare a Streamlit component. `declare_component` returns a function
 # that is used to create instances of the component. We're naming this
@@ -28,11 +28,8 @@ else:
     _component_func = components.declare_component(
         "parameters_widget", path=build_dir)
 
-# Create a wrapper function for the component. This is an optional
-# best practice - we could simply expose the component function returned by
-# `declare_component` and call it done. The wrapper allows us to customize
-# our component's API: we can pre-process its input args, post-process its
-# output value, and add a docstring for users.
+# Keep variables etc in streamlit state to survive
+# reloads
 def _assert_state(parameters):
     if 'init' not in st.session_state:
         st.session_state.init = True
@@ -40,8 +37,12 @@ def _assert_state(parameters):
         st.session_state.last_ui_update = time.time()
         st.session_state.debounce = time.time()
 
-print("RELOAD")
-def my_component(name="test", parameters=None, key=None):
+# Create a wrapper function for the component. This is an optional
+# best practice - we could simply expose the component function returned by
+# `declare_component` and call it done. The wrapper allows us to customize
+# our component's API: we can pre-process its input args, post-process its
+# output value, and add a docstring for users.
+def parameters_widget(name="test", parameters=None, key=None):
     # TODO: Parameter validation
     if parameters is None:
         parameters = {'epochs': {
@@ -63,12 +64,15 @@ def my_component(name="test", parameters=None, key=None):
             "errorMessage": "",
         }
         }
-    # etc
+
+    # Setup state
     _assert_state(parameters)
 
+    # create component and retrieve value
     component_value = _component_func(name=name, text="hellookes",
      parameters=st.session_state.parameters, debounce=st.session_state.debounce, key=name, default=None
     )
+    changed = False
     if component_value is not None:
         update = json.loads(component_value)
         timestamp = float(update["timestamp"])
@@ -76,21 +80,38 @@ def my_component(name="test", parameters=None, key=None):
         if timestamp != st.session_state.last_ui_update:
             st.session_state.last_ui_update = timestamp
             st.session_state.parameters.update(updated_parameters)
-            return True
-        return False
+            changed = True
+
+    # create object to wrap value and add functionality
+    class CustomRoboComponent:
+        def __init__(self, changed: bool):
+            self.changed = changed
+        
+        @property
+        def parameters(self):
+            return st.session_state.parameters
+
+        # Implement custom method to sync data back/forth to frontend
+        def sync_frontend(self):
+            # if experimental_rerun is done, Vue-side is updated,
+            # but this in turn can trigger a change in values   # SHOULD NOT CAUSE CHANGE IN VALUES?
+            # so we debounce this case
+            st.session_state.debounce = time.time()
+            st.experimental_rerun()
+
+    return CustomRoboComponent(changed=changed)
 
 if not _RELEASE:
     st.subheader("Streamlit Robovision Parameters widget")
 
     # Create an instance of our component with a constant `name` arg, and
     # print its output value.
-    change = my_component("World")
-    print(change)
+    widget = parameters_widget("World")
 
     # PERFORM DATA CHECKS
-    if change:
+    if widget.changed:
         # CHECK EPOCHS
-        if int(st.session_state.parameters["epochs"]["value"]) > 100:
+        if int(widget.parameters["epochs"]["value"]) > 100:
             msg = "Epoch should be smaller than 100!"
             error = True
         else:
@@ -98,11 +119,11 @@ if not _RELEASE:
             error = False
 
         st.info(msg)
-        st.session_state.parameters["epochs"]["error"] = error
-        st.session_state.parameters["epochs"]["errorMessage"] = msg
+        widget.parameters["epochs"]["error"] = error
+        widget.parameters["epochs"]["errorMessage"] = msg
 
         # CHECK BATCH SIZE
-        if int(st.session_state.parameters["batch_size"]["value"]) not in [1,2,4,8,16,32,64,128]:
+        if int(widget.parameters["batch_size"]["value"]) not in [1,2,4,8,16,32,64,128]:
             msg = "Batch size should be a power of 2!"
             error = True
         else:
@@ -110,16 +131,13 @@ if not _RELEASE:
             error = False
 
         st.info(msg)
-        st.session_state.parameters["batch_size"]["error"] = error
-        st.session_state.parameters["batch_size"]["errorMessage"] = msg
+        widget.parameters["batch_size"]["error"] = error
+        widget.parameters["batch_size"]["errorMessage"] = msg
 
-        st.markdown(st.session_state.parameters)
+        widget.sync_frontend()
 
-        # if experimental_rerun is done, Vue-side is updated,
-        # but this in turn can trigger a change in values   # SHOULD NOT CAUSE CHANGE IN VALUES?
-        # so we debounce this case
-        st.session_state.debounce = time.time()
-        st.experimental_rerun()
 
-    st.markdown(st.session_state.parameters)
+
+
+    st.markdown(widget.parameters)
     st.markdown("---")
