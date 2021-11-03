@@ -81,6 +81,7 @@ print(change)
 
 # PERFORM DATA CHECKS
 if st.session_state.init and change:
+    # CHECK EPOCHS
     if int(st.session_state.parameters["epochs"]["value"]) > 100:
         msg = "Epoch should be smaller than 100!"
         error = True
@@ -91,6 +92,19 @@ if st.session_state.init and change:
     st.info(msg)
     st.session_state.parameters["epochs"]["error"] = error
     st.session_state.parameters["epochs"]["errorMessage"] = msg
+
+    # CHECK BATCH SIZE
+    if int(st.session_state.parameters["batch_size"]["value"]) not in [1,2,4,8,16,32,64,128]:
+        msg = "Batch size should be a power of 2!"
+        error = True
+    else:
+        msg = ""
+        error = False
+
+    st.info(msg)
+    st.session_state.parameters["batch_size"]["error"] = error
+    st.session_state.parameters["batch_size"]["errorMessage"] = msg
+
     st.markdown(st.session_state.parameters)
 
     # if experimental_rerun is done, Vue-side is updated,
