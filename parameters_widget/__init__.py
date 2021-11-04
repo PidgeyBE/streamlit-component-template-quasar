@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-_RELEASE = False
+_RELEASE = True
 
 # Declare a Streamlit component. `declare_component` returns a function
 # that is used to create instances of the component. We're naming this
@@ -94,12 +94,14 @@ def parameters_widget(name="test", parameters=None, key=None):
         # Implement custom method to sync data back/forth to frontend
         def sync_frontend(self):
             # if experimental_rerun is done, Vue-side is updated,
-            # but this in turn can trigger a change in values   # SHOULD NOT CAUSE CHANGE IN VALUES?
+            # but this in turn can trigger a change in values
             # so we debounce this case
             st.session_state.debounce = time.time()
             st.experimental_rerun()
 
     return CustomRoboComponent(changed=changed)
+
+
 
 if not _RELEASE:
     st.subheader("Streamlit Robovision Parameters widget")
